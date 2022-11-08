@@ -12,6 +12,8 @@
 		986E33CA291AA42A00172610 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 986E33C9291AA42A00172610 /* Assets.xcassets */; };
 		986E33CD291AA42A00172610 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 986E33CC291AA42A00172610 /* Preview Assets.xcassets */; };
 		986E33D4291AA5FE00172610 /* Coordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D3291AA5FE00172610 /* Coordinator.swift */; };
+		986E33D7291AA9F700172610 /* MainRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D6291AA9F700172610 /* MainRenderer.swift */; };
+		986E33D9291AAAFD00172610 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D8291AAAFD00172610 /* Shaders.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,8 @@
 		986E33CC291AA42A00172610 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		986E33D3291AA5FE00172610 /* Coordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinator.swift; sourceTree = "<group>"; };
 		986E33D5291AA91700172610 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		986E33D6291AA9F700172610 /* MainRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRenderer.swift; sourceTree = "<group>"; };
+		986E33D8291AAAFD00172610 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +64,8 @@
 				986E33C9291AA42A00172610 /* Assets.xcassets */,
 				986E33CB291AA42A00172610 /* Preview Content */,
 				986E33D3291AA5FE00172610 /* Coordinator.swift */,
+				986E33D6291AA9F700172610 /* MainRenderer.swift */,
+				986E33D8291AAAFD00172610 /* Shaders.metal */,
 			);
 			path = LiDARScanningApp;
 			sourceTree = "<group>";
@@ -143,8 +149,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				986E33C8291AA42900172610 /* ContentView.swift in Sources */,
+				986E33D7291AA9F700172610 /* MainRenderer.swift in Sources */,
 				986E33C6291AA42900172610 /* LiDARScanningAppApp.swift in Sources */,
 				986E33D4291AA5FE00172610 /* Coordinator.swift in Sources */,
+				986E33D9291AAAFD00172610 /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

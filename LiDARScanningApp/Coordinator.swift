@@ -12,7 +12,7 @@ import ARKit
 class Coordinator: NSObject, ObservableObject {
   var session: ARSession
   var view: MTKView
-//  var renderer: MainRenderer!
+  var renderer: MainRenderer!
   
   override init() {
     self.session = ARSession()
@@ -52,6 +52,10 @@ class Coordinator: NSObject, ObservableObject {
     view.colorPixelFormat = .bgr10_xr
 
     super.init()
+    
+    // Initialize Main Renderer after superclass
+    
+    self.renderer = MainRenderer(session: session, view: view, coordinator: self)
   }
 }
 
