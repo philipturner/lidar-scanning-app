@@ -14,6 +14,12 @@
 		986E33D4291AA5FE00172610 /* Coordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D3291AA5FE00172610 /* Coordinator.swift */; };
 		986E33D7291AA9F700172610 /* MainRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D6291AA9F700172610 /* MainRenderer.swift */; };
 		986E33D9291AAAFD00172610 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D8291AAAFD00172610 /* Shaders.metal */; };
+		986E33DB291AAC8B00172610 /* CoreVideoExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33DA291AAC8B00172610 /* CoreVideoExtensions.swift */; };
+		986E33DD291AAE8400172610 /* CameraMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33DC291AAE8400172610 /* CameraMeasurements.swift */; };
+		986E33E0291AAEA800172610 /* DeviceKit in Frameworks */ = {isa = PBXBuildFile; productRef = 986E33DF291AAEA800172610 /* DeviceKit */; };
+		986E33E3291AAF2100172610 /* DeviceMeasurementProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E2291AAF2100172610 /* DeviceMeasurementProvider.swift */; };
+		986E33E5291AAF3200172610 /* DeviceMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E4291AAF3200172610 /* DeviceMeasurements.swift */; };
+		986E33E7291AAF4200172610 /* FutureDeviceMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E6291AAF4200172610 /* FutureDeviceMeasurements.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +32,11 @@
 		986E33D5291AA91700172610 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		986E33D6291AA9F700172610 /* MainRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRenderer.swift; sourceTree = "<group>"; };
 		986E33D8291AAAFD00172610 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		986E33DA291AAC8B00172610 /* CoreVideoExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreVideoExtensions.swift; sourceTree = "<group>"; };
+		986E33DC291AAE8400172610 /* CameraMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraMeasurements.swift; sourceTree = "<group>"; };
+		986E33E2291AAF2100172610 /* DeviceMeasurementProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMeasurementProvider.swift; sourceTree = "<group>"; };
+		986E33E4291AAF3200172610 /* DeviceMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMeasurements.swift; sourceTree = "<group>"; };
+		986E33E6291AAF4200172610 /* FutureDeviceMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FutureDeviceMeasurements.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				986E33E0291AAEA800172610 /* DeviceKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,6 +70,7 @@
 		986E33C4291AA42900172610 /* LiDARScanningApp */ = {
 			isa = PBXGroup;
 			children = (
+				986E33E1291AAF0B00172610 /* DeviceKit Extensions */,
 				986E33D5291AA91700172610 /* Info.plist */,
 				986E33C5291AA42900172610 /* LiDARScanningAppApp.swift */,
 				986E33C7291AA42900172610 /* ContentView.swift */,
@@ -66,6 +79,8 @@
 				986E33D3291AA5FE00172610 /* Coordinator.swift */,
 				986E33D6291AA9F700172610 /* MainRenderer.swift */,
 				986E33D8291AAAFD00172610 /* Shaders.metal */,
+				986E33DA291AAC8B00172610 /* CoreVideoExtensions.swift */,
+				986E33DC291AAE8400172610 /* CameraMeasurements.swift */,
 			);
 			path = LiDARScanningApp;
 			sourceTree = "<group>";
@@ -76,6 +91,16 @@
 				986E33CC291AA42A00172610 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		986E33E1291AAF0B00172610 /* DeviceKit Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				986E33E2291AAF2100172610 /* DeviceMeasurementProvider.swift */,
+				986E33E4291AAF3200172610 /* DeviceMeasurements.swift */,
+				986E33E6291AAF4200172610 /* FutureDeviceMeasurements.swift */,
+			);
+			path = "DeviceKit Extensions";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -94,6 +119,9 @@
 			dependencies = (
 			);
 			name = LiDARScanningApp;
+			packageProductDependencies = (
+				986E33DF291AAEA800172610 /* DeviceKit */,
+			);
 			productName = LiDARScanningApp;
 			productReference = 986E33C2291AA42900172610 /* LiDARScanningApp.app */;
 			productType = "com.apple.product-type.application";
@@ -122,6 +150,9 @@
 				Base,
 			);
 			mainGroup = 986E33B9291AA42900172610;
+			packageReferences = (
+				986E33DE291AAEA800172610 /* XCRemoteSwiftPackageReference "DeviceKit" */,
+			);
 			productRefGroup = 986E33C3291AA42900172610 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -148,11 +179,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				986E33E5291AAF3200172610 /* DeviceMeasurements.swift in Sources */,
+				986E33DD291AAE8400172610 /* CameraMeasurements.swift in Sources */,
+				986E33DB291AAC8B00172610 /* CoreVideoExtensions.swift in Sources */,
 				986E33C8291AA42900172610 /* ContentView.swift in Sources */,
+				986E33E3291AAF2100172610 /* DeviceMeasurementProvider.swift in Sources */,
 				986E33D7291AA9F700172610 /* MainRenderer.swift in Sources */,
 				986E33C6291AA42900172610 /* LiDARScanningAppApp.swift in Sources */,
 				986E33D4291AA5FE00172610 /* Coordinator.swift in Sources */,
 				986E33D9291AAAFD00172610 /* Shaders.metal in Sources */,
+				986E33E7291AAF4200172610 /* FutureDeviceMeasurements.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,6 +397,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		986E33DE291AAEA800172610 /* XCRemoteSwiftPackageReference "DeviceKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devicekit/DeviceKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		986E33DF291AAEA800172610 /* DeviceKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 986E33DE291AAEA800172610 /* XCRemoteSwiftPackageReference "DeviceKit" */;
+			productName = DeviceKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 986E33BA291AA42900172610 /* Project object */;
 }

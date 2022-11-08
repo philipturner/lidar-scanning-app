@@ -55,7 +55,16 @@ class Coordinator: NSObject, ObservableObject {
     
     // Initialize Main Renderer after superclass
     
+    self.view.delegate = self
     self.renderer = MainRenderer(session: session, view: view, coordinator: self)
   }
 }
 
+extension Coordinator: MTKViewDelegate {
+  func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) { }
+  
+  func draw(in view: MTKView) {
+    precondition(view == self.view, "Incorrect MTKView.")
+    renderer.update()
+  }
+}
