@@ -23,6 +23,7 @@ class MainRenderer {
   
   // Resources for rendering
   
+  var updateTexturesSemaphore = DispatchSemaphore(value: 0)
   var colorTextureY: MTLTexture!
   var colorTextureCbCr: MTLTexture!
   var sceneDepthTexture: MTLTexture!
@@ -73,8 +74,11 @@ class MainRenderer {
     self.depthTexture.label = "Depth Texture"
     
     // Store the intermediate depth texture so a later render pass can read from
-    // it.
+    // it. Also, don't make it multisample. That would use a lot of memory and
+    // possibly reduce frame rate.
     textureDescriptor.storageMode = .private
+    textureDescriptor.textureType = .type2D
+    textureDescriptor.sampleCount = 1
     self.intermediateDepthTexture = device.makeTexture(descriptor: textureDescriptor)!
     self.intermediateDepthTexture.label = "Depth Texture"
     
@@ -109,13 +113,24 @@ extension MainRenderer {
     }
     
     updateUniforms(frame: frame)
-    updateTextures(frame: frame)
+    DispatchQueue.global(qos: .userInteractive).async {
+      self.asyncUpdateTextures(frame: frame)
+      self.updateTexturesSemaphore.signal()
+    }
     self.sceneMeshReducer.updateResources(frame: frame)
     
     let commandBuffer = commandQueue.makeCommandBuffer()!
     commandBuffer.addCompletedHandler { _ in
       self.renderSemaphore.signal()
     }
+    
+    // Run the Z pre-pass.
+    sceneRenderer.drawZBuffer(commandBuffer: commandBuffer)
+    
+    // Synchronize with color textures before proceeding.
+    updateTexturesSemaphore.wait()
+    
+    // Fetch drawable for actual render pass.
     let drawable = view.currentDrawable!
     
     let renderPassDescriptor = MTLRenderPassDescriptor()
@@ -123,6 +138,7 @@ extension MainRenderer {
     renderPassDescriptor.colorAttachments[0].loadAction = .clear
     renderPassDescriptor.colorAttachments[0].storeAction = .multisampleResolve
     renderPassDescriptor.colorAttachments[0].resolveTexture = drawable.texture
+    // Depth texture technically not necessary.
     renderPassDescriptor.depthAttachment.texture = depthTexture
     renderPassDescriptor.depthAttachment.clearDepth = 0
     
@@ -134,6 +150,8 @@ extension MainRenderer {
     sceneRenderer.drawGeometry(renderEncoder: renderEncoder)
     
     renderEncoder.endEncoding()
+    
+    // TODO: Make another render encoder for the second pass.
     commandBuffer.present(drawable)
     commandBuffer.commit()
     
@@ -146,7 +164,7 @@ extension MainRenderer {
     cameraMeasurements.updateResources(frame: frame)
   }
   
-  func updateTextures(frame: ARFrame) {
+  func asyncUpdateTextures(frame: ARFrame) {
     func bind(
       _ pixelBuffer: CVPixelBuffer?,
       to reference: inout MTLTexture!,

@@ -9,7 +9,7 @@
 using namespace metal;
 
 typedef struct {
-  float4x4 cameraProjectionTransform;
+  float4x4 projectionTransform;
 } VertexUniforms;
 
 typedef struct {
@@ -23,7 +23,7 @@ VertexInOut lidarMeshVertexTransform(
   uint vid [[vertex_id]]
 ) {
   float4 position =
-    vertexUniforms.cameraProjectionTransform * float4(vertices[vid], 1);
+    vertexUniforms.projectionTransform * float4(vertices[vid], 1);
   return { position };
 }
 
@@ -38,7 +38,7 @@ FragmentOut lidarMeshLineFragmentShader(
   VertexInOut in [[stage_in]],
   depth2d<float, access::sample> depthTexture [[texture(0)]]
 ) {
-  constexpr sampler depthSampler(filter::linear);
+  constexpr sampler depthSampler(filter::linear, coord::normalized);
   
   // Larger depths mean closer to the camera; this is part of the algorithm that
   // redistributes dynamic range to preserve more information.

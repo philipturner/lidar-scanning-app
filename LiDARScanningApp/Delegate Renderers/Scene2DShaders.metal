@@ -56,7 +56,7 @@ FragmentOut scene2DFragmentShader(
   texture2d<half, access::sample> colorTextureY [[texture(0)]],
   texture2d<half, access::sample> colorTextureCbCr [[texture(1)]]
 ) {
-  constexpr sampler colorSampler(filter::linear);
+  constexpr sampler colorSampler(filter::linear, coord::normalized);
   
   half2 chroma = colorTextureCbCr.sample(colorSampler, in.videoFrameCoords).rg;
   half  luma   = colorTextureY   .sample(colorSampler, in.videoFrameCoords).r;
