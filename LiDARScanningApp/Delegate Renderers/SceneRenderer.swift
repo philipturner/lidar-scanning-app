@@ -11,8 +11,21 @@ import simd
 class SceneRenderer: DelegateRenderer {
   unowned let renderer: MainRenderer
   
+  var scene2DPipelineState: MTLRenderPipelineState
+  
   init(renderer: MainRenderer, library: MTLLibrary) {
     self.renderer = renderer
+    
+    let desc = MTLRenderPipelineDescriptor()
+    desc.rasterSampleCount = 4
+    desc.depthAttachmentPixelFormat = .depth32Float
+    desc.inputPrimitiveTopology = .triangle
+    desc.vertexFunction = library.makeFunction(name: "scene2DVertexTransform")!
+    desc.fragmentFunction = library.makeFunction(name: "scene2DFragmentShader")!
+    desc.label = "Scene 2D Render Pipeline"
+    
+    self.scene2DPipelineState = try!
+      renderer.device.makeRenderPipelineState(descriptor: desc)
   }
 }
 
@@ -27,6 +40,21 @@ extension SceneRenderer {
   // - Render visible triangles in a transparent green, in a second render pass.
   // - Render wireframe as red and dimmer, when occluded by furniture.
   func drawGeometry(renderEncoder: MTLRenderCommandEncoder) {
+    // Ensure vertices are oriented in the right order.
+    renderEncoder.setCullMode(.back)
+    renderEncoder.setRenderPipelineState(scene2DPipelineState)
     
+    struct VertexUniforms {
+      var projectionTransform: simd_float4x4
+      var cameraPlaneDepth: Float
+      var imageBounds: simd_float2
+    }
+    
+    let projectionTransform = worldToScreenClipTransform * cameraToWorldTransform
+    let pixelWidthHalf = Float(renderer.cameraMeasurements.currentPixelWidth) * 0.5
+    let imageBounds = simd_float2(
+        Float(imageResolution.width) * pixelWidthHalf,
+        Float(imageResolution.height) * pixelWidthHalf
+    )
   }
 }
