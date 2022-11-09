@@ -36,7 +36,8 @@ class MainRenderer {
   
   // Delegates
   
-  var cameraMeasurements: CameraMeasurements!
+  var userSettings: UserSettings!
+  var cameraMeasurements: CameraMeasurements { userSettings.cameraMeasurements }
   
   init(session: ARSession, view: MTKView, coordinator: Coordinator) {
     self.session = session
@@ -77,19 +78,28 @@ class MainRenderer {
     
     // Delegates
     
-    self.cameraMeasurements = CameraMeasurements(renderer: self, library: library)
+    self.userSettings = UserSettings(renderer: self, library: library)
   }
 }
 
 extension MainRenderer {
-  // - Render wireframe as green and bright, when visible IRL.
-  // - Render visible triangles in a transparent green, in a second render pass.
-  // - Render wireframe as red and dimmer, when occluded by furniture.
   func update() {
+    renderSemaphore.wait()
+    guard let frame = session.currentFrame else {
+      renderSemaphore.signal()
+      return
+    }
     
+    updateTextures(frame: frame)
+    renderSemaphore.signal()
   }
   
-  func updateResources(frame: ARFrame) {
+  func updateUniforms(frame: ARFrame) {
+    renderIndex = (renderIndex + 1) % 3
+    cameraMeasurements.updateResources(frame: frame)
+  }
+  
+  func updateTextures(frame: ARFrame) {
     func bind(
       _ pixelBuffer: CVPixelBuffer?,
       to reference: inout MTLTexture!,

@@ -13,13 +13,19 @@
 		986E33CD291AA42A00172610 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 986E33CC291AA42A00172610 /* Preview Assets.xcassets */; };
 		986E33D4291AA5FE00172610 /* Coordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D3291AA5FE00172610 /* Coordinator.swift */; };
 		986E33D7291AA9F700172610 /* MainRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D6291AA9F700172610 /* MainRenderer.swift */; };
-		986E33D9291AAAFD00172610 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D8291AAAFD00172610 /* Shaders.metal */; };
+		986E33D9291AAAFD00172610 /* Scene2DShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 986E33D8291AAAFD00172610 /* Scene2DShaders.metal */; };
 		986E33DB291AAC8B00172610 /* CoreVideoExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33DA291AAC8B00172610 /* CoreVideoExtensions.swift */; };
 		986E33DD291AAE8400172610 /* CameraMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33DC291AAE8400172610 /* CameraMeasurements.swift */; };
 		986E33E0291AAEA800172610 /* DeviceKit in Frameworks */ = {isa = PBXBuildFile; productRef = 986E33DF291AAEA800172610 /* DeviceKit */; };
 		986E33E3291AAF2100172610 /* DeviceMeasurementProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E2291AAF2100172610 /* DeviceMeasurementProvider.swift */; };
 		986E33E5291AAF3200172610 /* DeviceMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E4291AAF3200172610 /* DeviceMeasurements.swift */; };
 		986E33E7291AAF4200172610 /* FutureDeviceMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E6291AAF4200172610 /* FutureDeviceMeasurements.swift */; };
+		98BB44DE291BF4C60024C064 /* SceneRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44DD291BF4C60024C064 /* SceneRenderer.swift */; };
+		98BB44E0291BF4F00024C064 /* DelegateRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44DF291BF4F00024C064 /* DelegateRenderer.swift */; };
+		98BB44E4291BF7620024C064 /* ColorUtilities.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44E3291BF7620024C064 /* ColorUtilities.metal */; };
+		98BB44E6291BFB290024C064 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44E5291BFB290024C064 /* UserSettings.swift */; };
+		98BB44E8291BFE3F0024C064 /* MathUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44E7291BFE3F0024C064 /* MathUtilities.swift */; };
+		98BB44EA291BFE530024C064 /* simdExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44E9291BFE530024C064 /* simdExtensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,12 +37,19 @@
 		986E33D3291AA5FE00172610 /* Coordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinator.swift; sourceTree = "<group>"; };
 		986E33D5291AA91700172610 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		986E33D6291AA9F700172610 /* MainRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRenderer.swift; sourceTree = "<group>"; };
-		986E33D8291AAAFD00172610 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		986E33D8291AAAFD00172610 /* Scene2DShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Scene2DShaders.metal; sourceTree = "<group>"; };
 		986E33DA291AAC8B00172610 /* CoreVideoExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreVideoExtensions.swift; sourceTree = "<group>"; };
 		986E33DC291AAE8400172610 /* CameraMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraMeasurements.swift; sourceTree = "<group>"; };
 		986E33E2291AAF2100172610 /* DeviceMeasurementProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMeasurementProvider.swift; sourceTree = "<group>"; };
 		986E33E4291AAF3200172610 /* DeviceMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMeasurements.swift; sourceTree = "<group>"; };
 		986E33E6291AAF4200172610 /* FutureDeviceMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FutureDeviceMeasurements.swift; sourceTree = "<group>"; };
+		98BB44DD291BF4C60024C064 /* SceneRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneRenderer.swift; sourceTree = "<group>"; };
+		98BB44DF291BF4F00024C064 /* DelegateRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelegateRenderer.swift; sourceTree = "<group>"; };
+		98BB44E2291BF74C0024C064 /* ColorUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ColorUtilities.h; sourceTree = "<group>"; };
+		98BB44E3291BF7620024C064 /* ColorUtilities.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ColorUtilities.metal; sourceTree = "<group>"; };
+		98BB44E5291BFB290024C064 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
+		98BB44E7291BFE3F0024C064 /* MathUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathUtilities.swift; sourceTree = "<group>"; };
+		98BB44E9291BFE530024C064 /* simdExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = simdExtensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,7 +83,9 @@
 		986E33C4291AA42900172610 /* LiDARScanningApp */ = {
 			isa = PBXGroup;
 			children = (
-				986E33E1291AAF0B00172610 /* DeviceKit Extensions */,
+				98BB44E1291BF72F0024C064 /* Metal Utilities */,
+				98BB44DC291BF49B0024C064 /* Delegate Renderers */,
+				986E33E1291AAF0B00172610 /* Framework Extensions */,
 				986E33D5291AA91700172610 /* Info.plist */,
 				986E33C5291AA42900172610 /* LiDARScanningAppApp.swift */,
 				986E33C7291AA42900172610 /* ContentView.swift */,
@@ -78,9 +93,6 @@
 				986E33CB291AA42A00172610 /* Preview Content */,
 				986E33D3291AA5FE00172610 /* Coordinator.swift */,
 				986E33D6291AA9F700172610 /* MainRenderer.swift */,
-				986E33D8291AAAFD00172610 /* Shaders.metal */,
-				986E33DA291AAC8B00172610 /* CoreVideoExtensions.swift */,
-				986E33DC291AAE8400172610 /* CameraMeasurements.swift */,
 			);
 			path = LiDARScanningApp;
 			sourceTree = "<group>";
@@ -93,14 +105,38 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		986E33E1291AAF0B00172610 /* DeviceKit Extensions */ = {
+		986E33E1291AAF0B00172610 /* Framework Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				986E33DA291AAC8B00172610 /* CoreVideoExtensions.swift */,
 				986E33E2291AAF2100172610 /* DeviceMeasurementProvider.swift */,
 				986E33E4291AAF3200172610 /* DeviceMeasurements.swift */,
 				986E33E6291AAF4200172610 /* FutureDeviceMeasurements.swift */,
+				98BB44E7291BFE3F0024C064 /* MathUtilities.swift */,
+				98BB44E9291BFE530024C064 /* simdExtensions.swift */,
 			);
-			path = "DeviceKit Extensions";
+			path = "Framework Extensions";
+			sourceTree = "<group>";
+		};
+		98BB44DC291BF49B0024C064 /* Delegate Renderers */ = {
+			isa = PBXGroup;
+			children = (
+				986E33DC291AAE8400172610 /* CameraMeasurements.swift */,
+				98BB44DD291BF4C60024C064 /* SceneRenderer.swift */,
+				98BB44DF291BF4F00024C064 /* DelegateRenderer.swift */,
+				986E33D8291AAAFD00172610 /* Scene2DShaders.metal */,
+				98BB44E5291BFB290024C064 /* UserSettings.swift */,
+			);
+			path = "Delegate Renderers";
+			sourceTree = "<group>";
+		};
+		98BB44E1291BF72F0024C064 /* Metal Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				98BB44E2291BF74C0024C064 /* ColorUtilities.h */,
+				98BB44E3291BF7620024C064 /* ColorUtilities.metal */,
+			);
+			path = "Metal Utilities";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -183,11 +219,17 @@
 				986E33DD291AAE8400172610 /* CameraMeasurements.swift in Sources */,
 				986E33DB291AAC8B00172610 /* CoreVideoExtensions.swift in Sources */,
 				986E33C8291AA42900172610 /* ContentView.swift in Sources */,
+				98BB44E8291BFE3F0024C064 /* MathUtilities.swift in Sources */,
+				98BB44E4291BF7620024C064 /* ColorUtilities.metal in Sources */,
+				98BB44DE291BF4C60024C064 /* SceneRenderer.swift in Sources */,
 				986E33E3291AAF2100172610 /* DeviceMeasurementProvider.swift in Sources */,
 				986E33D7291AA9F700172610 /* MainRenderer.swift in Sources */,
+				98BB44E0291BF4F00024C064 /* DelegateRenderer.swift in Sources */,
 				986E33C6291AA42900172610 /* LiDARScanningAppApp.swift in Sources */,
 				986E33D4291AA5FE00172610 /* Coordinator.swift in Sources */,
-				986E33D9291AAAFD00172610 /* Shaders.metal in Sources */,
+				98BB44EA291BFE530024C064 /* simdExtensions.swift in Sources */,
+				98BB44E6291BFB290024C064 /* UserSettings.swift in Sources */,
+				986E33D9291AAAFD00172610 /* Scene2DShaders.metal in Sources */,
 				986E33E7291AAF4200172610 /* FutureDeviceMeasurements.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
