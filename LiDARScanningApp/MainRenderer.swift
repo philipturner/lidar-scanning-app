@@ -30,14 +30,15 @@ class MainRenderer {
   var textureCache: CVMetalTextureCache
   
   var msaaTexture: MTLTexture
-  // renderPipelineState
-  var depthStencilTexture: MTLTexture
+  var intermediateDepthTexture: MTLTexture
+  var depthTexture: MTLTexture
   var depthStencilState: MTLDepthStencilState
   
   // Delegates
   
   var userSettings: UserSettings!
   var cameraMeasurements: CameraMeasurements { userSettings.cameraMeasurements }
+  var sceneRenderer: SceneRenderer!
   
   init(session: ARSession, view: MTKView, coordinator: Coordinator) {
     self.session = session
@@ -49,8 +50,8 @@ class MainRenderer {
     self.library = device.makeDefaultLibrary()!
     
     self.textureCache = CVMetalTextureCache?(
-      nil,    [kCVMetalTextureCacheMaximumTextureAgeKey : 1e-5],
-                                                device, [kCVMetalTextureUsage : MTLTextureUsage.shaderRead.rawValue])!
+      nil, [kCVMetalTextureCacheMaximumTextureAgeKey : 1e-5], device,
+      [kCVMetalTextureUsage : MTLTextureUsage.shaderRead.rawValue])!
     
     let textureDescriptor = MTLTextureDescriptor()
     let bounds = UIScreen.main.nativeBounds
@@ -63,12 +64,19 @@ class MainRenderer {
     textureDescriptor.sampleCount = 4
     
     textureDescriptor.pixelFormat = view.colorPixelFormat
-    msaaTexture = device.makeTexture(descriptor: textureDescriptor)!
-    msaaTexture.label = "MSAA Texture"
+    self.msaaTexture = device.makeTexture(descriptor: textureDescriptor)!
+    self.msaaTexture.label = "MSAA Texture"
     
-    textureDescriptor.pixelFormat = .depth32Float_stencil8
-    depthStencilTexture = device.makeTexture(descriptor: textureDescriptor)!
-    depthStencilTexture.label = "Depth-Stencil Texture"
+    // This depth texture is memoryless.
+    textureDescriptor.pixelFormat = .depth32Float
+    self.depthTexture = device.makeTexture(descriptor: textureDescriptor)!
+    self.depthTexture.label = "Depth Texture"
+    
+    // Store the intermediate depth texture so a later render pass can read from
+    // it.
+    textureDescriptor.storageMode = .private
+    self.intermediateDepthTexture = device.makeTexture(descriptor: textureDescriptor)!
+    self.intermediateDepthTexture.label = "Depth Texture"
     
     let depthStencilDescriptor = MTLDepthStencilDescriptor()
     depthStencilDescriptor.depthCompareFunction = .greater
@@ -79,6 +87,7 @@ class MainRenderer {
     // Delegates
     
     self.userSettings = UserSettings(renderer: self, library: library)
+    self.sceneRenderer = SceneRenderer(renderer: self, library: library)
   }
 }
 
@@ -90,8 +99,33 @@ extension MainRenderer {
       return
     }
     
+    updateUniforms(frame: frame)
     updateTextures(frame: frame)
-    renderSemaphore.signal()
+    
+    let commandBuffer = commandQueue.makeCommandBuffer()!
+    commandBuffer.addCompletedHandler { _ in
+      self.renderSemaphore.signal()
+    }
+    let drawable = view.currentDrawable!
+    
+    let renderPassDescriptor = MTLRenderPassDescriptor()
+    renderPassDescriptor.colorAttachments[0].texture = msaaTexture
+    renderPassDescriptor.colorAttachments[0].loadAction = .clear
+    renderPassDescriptor.colorAttachments[0].storeAction = .multisampleResolve
+    renderPassDescriptor.colorAttachments[0].resolveTexture = drawable.texture
+    renderPassDescriptor.depthAttachment.texture = depthTexture
+    renderPassDescriptor.depthAttachment.clearDepth = 0
+    
+    let renderEncoder = commandBuffer.makeRenderCommandEncoder(
+      descriptor: renderPassDescriptor)!
+    renderEncoder.setFrontFacing(.counterClockwise)
+    
+    // Draw the scene geometry.
+    sceneRenderer.drawGeometry(renderEncoder: renderEncoder)
+    
+    renderEncoder.endEncoding()
+    commandBuffer.present(drawable)
+    commandBuffer.commit()
   }
   
   func updateUniforms(frame: ARFrame) {

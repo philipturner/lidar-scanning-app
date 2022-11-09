@@ -76,6 +76,7 @@ final class CameraMeasurements: DelegateUserSettings {
         let possibleDeviceSize = device.deviceSize
         
         let nativeBounds = UIScreen.main.nativeBounds
+      print(nativeBounds, imageResolution)
         let screenBounds = CGSize(width: nativeBounds.height, height: nativeBounds.width)
         cameraToScreenAspectRatioMultiplier = aspectRatio * Float(screenBounds.height / screenBounds.width)
         
@@ -152,9 +153,9 @@ extension CameraMeasurements {
                 wideCameraOffset.z + storedSettings.caseProtrusionDepth
             ))
             
-            let bezelSize = (deviceSize.y - screenSize.y) * 0.5
-            let viewCenterToMiddleDistance = pendingStoredSettings.eyeOffsetX
-            let viewCenterToBottomDistance = pendingStoredSettings.eyeOffsetY - bezelSize - pendingStoredSettings.caseThickness
+//            let bezelSize = (deviceSize.y - screenSize.y) * 0.5
+//            let viewCenterToMiddleDistance = pendingStoredSettings.eyeOffsetX
+//            let viewCenterToBottomDistance = pendingStoredSettings.eyeOffsetY - bezelSize - pendingStoredSettings.caseThickness
             
 //            let pixelsPerMeter = lensDistortionCorrector.pixelsPerMeter
 //            lensDistortionCorrector.viewCenterToMiddleDistance = Int(viewCenterToMiddleDistance * pixelsPerMeter)

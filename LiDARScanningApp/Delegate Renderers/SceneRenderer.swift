@@ -11,6 +11,8 @@ import simd
 class SceneRenderer: DelegateRenderer {
   unowned let renderer: MainRenderer
   
+  var cameraPlaneDepth: Float = 2
+  
   var scene2DPipelineState: MTLRenderPipelineState
   
   init(renderer: MainRenderer, library: MTLLibrary) {
@@ -20,6 +22,8 @@ class SceneRenderer: DelegateRenderer {
     desc.rasterSampleCount = 4
     desc.depthAttachmentPixelFormat = .depth32Float
     desc.inputPrimitiveTopology = .triangle
+    desc.colorAttachments[0].pixelFormat = .bgr10_xr
+    
     desc.vertexFunction = library.makeFunction(name: "scene2DVertexTransform")!
     desc.fragmentFunction = library.makeFunction(name: "scene2DFragmentShader")!
     desc.label = "Scene 2D Render Pipeline"
@@ -56,5 +60,18 @@ extension SceneRenderer {
         Float(imageResolution.width) * pixelWidthHalf,
         Float(imageResolution.height) * pixelWidthHalf
     )
+//    print(pixelWidthHalf)
+//    print(imageBounds)
+    
+    var vertexUniforms = VertexUniforms(
+      projectionTransform: projectionTransform,
+      cameraPlaneDepth: -cameraPlaneDepth,
+      imageBounds: imageBounds * cameraPlaneDepth)
+    renderEncoder.setVertexBytes(
+      &vertexUniforms, length: MemoryLayout<VertexUniforms>.stride, index: 0)
+    
+    renderEncoder.setFragmentTexture(colorTextureY,    index: 0)
+    renderEncoder.setFragmentTexture(colorTextureCbCr, index: 1)
+    renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6)
   }
 }

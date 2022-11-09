@@ -10,14 +10,25 @@ import MetalKit
 
 struct ContentView: View {
     var body: some View {
-      let bounds = UIScreen.main.bounds
-      
-      MetalView(coordinator: Coordinator())
-        .disabled(false)
-        .frame(width: bounds.height, height: bounds.width)
-        .rotationEffect(.degrees(90))
-        .position(x: bounds.width * 0.5, y: bounds.height * 0.5)
+      ZStack {
+        ARDisplayView(coordinator: Coordinator())
+      }
+      .ignoresSafeArea(.all)
     }
+}
+
+struct ARDisplayView: View {
+  @ObservedObject var coordinator: Coordinator
+  
+  var body: some View {
+    let bounds = UIScreen.main.bounds
+    
+    MetalView(coordinator: coordinator)
+      .disabled(false)
+      .frame(width: bounds.height, height: bounds.width)
+      .rotationEffect(.degrees(90))
+      .position(x: bounds.width * 0.5, y: bounds.height * 0.5)
+  }
 }
 
 struct MetalView: UIViewRepresentable {
