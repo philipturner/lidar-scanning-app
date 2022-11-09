@@ -39,6 +39,7 @@ class MainRenderer {
   var userSettings: UserSettings!
   var cameraMeasurements: CameraMeasurements { userSettings.cameraMeasurements }
   var sceneRenderer: SceneRenderer!
+  var sceneMeshReducer: SceneMeshReducer!
   
   init(session: ARSession, view: MTKView, coordinator: Coordinator) {
     self.session = session
@@ -88,11 +89,26 @@ class MainRenderer {
     
     self.userSettings = UserSettings(renderer: self, library: library)
     self.sceneRenderer = SceneRenderer(renderer: self, library: library)
+    self.sceneMeshReducer = SceneMeshReducer(renderer: self, library: library)
+  }
+}
+
+extension MainRenderer {
+  func updateMesh() {
+    guard sceneMeshReducer.shouldUpdateMesh else { return }
+    
+    DispatchQueue.global(qos: .utility).async(execute: { [unowned self] in
+      sceneMeshReducer.reduceMeshes()
+      sceneMeshReducer.justCompletedMatching = true
+      sceneMeshReducer.currentlyMatchingMeshes = false
+    })
   }
 }
 
 extension MainRenderer {
   func update() {
+    print(Optional(sceneMeshReducer.reducedVertexBuffer))
+    
     renderSemaphore.wait()
     guard let frame = session.currentFrame else {
       renderSemaphore.signal()
@@ -101,6 +117,7 @@ extension MainRenderer {
     
     updateUniforms(frame: frame)
     updateTextures(frame: frame)
+    self.sceneMeshReducer.updateResources(frame: frame)
     
     let commandBuffer = commandQueue.makeCommandBuffer()!
     commandBuffer.addCompletedHandler { _ in
@@ -126,6 +143,9 @@ extension MainRenderer {
     renderEncoder.endEncoding()
     commandBuffer.present(drawable)
     commandBuffer.commit()
+    
+    // Update mesh afterward
+    self.updateMesh()
   }
   
   func updateUniforms(frame: ARFrame) {

@@ -76,7 +76,6 @@ final class CameraMeasurements: DelegateUserSettings {
         let possibleDeviceSize = device.deviceSize
         
         let nativeBounds = UIScreen.main.nativeBounds
-      print(nativeBounds, imageResolution)
         let screenBounds = CGSize(width: nativeBounds.height, height: nativeBounds.width)
         cameraToScreenAspectRatioMultiplier = aspectRatio * Float(screenBounds.height / screenBounds.width)
         
