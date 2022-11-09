@@ -46,7 +46,7 @@ VertexInOut scene2DVertexTransform(
 }
 
 typedef struct {
-  half3 color [[color(0)]];
+  half4 color [[color(0)]];
   float depth [[depth(any)]];
 } FragmentOut;
 
@@ -61,5 +61,6 @@ FragmentOut scene2DFragmentShader(
   half2 chroma = colorTextureCbCr.sample(colorSampler, in.videoFrameCoords).rg;
   half  luma   = colorTextureY   .sample(colorSampler, in.videoFrameCoords).r;
   
-  return { ColorUtilities::convertYCbCr_toRGB(chroma, luma), FLT_MIN };
+  half4 color(ColorUtilities::convertYCbCr_toRGB(chroma, luma), 1);
+  return { color, FLT_MIN };
 }

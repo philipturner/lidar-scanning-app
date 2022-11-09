@@ -49,7 +49,7 @@ class Coordinator: NSObject, ObservableObject {
     castedLayer.allowsNextDrawableTimeout = false
     
     view.device = MTLCreateSystemDefaultDevice()!
-    view.colorPixelFormat = .bgr10_xr
+    view.colorPixelFormat = .bgra10_xr
 
     super.init()
     

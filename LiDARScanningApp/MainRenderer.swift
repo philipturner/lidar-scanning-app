@@ -32,7 +32,6 @@ class MainRenderer {
   var msaaTexture: MTLTexture
   var intermediateDepthTexture: MTLTexture
   var depthTexture: MTLTexture
-  var depthStencilState: MTLDepthStencilState
   
   // Delegates
   
@@ -78,12 +77,6 @@ class MainRenderer {
     textureDescriptor.storageMode = .private
     self.intermediateDepthTexture = device.makeTexture(descriptor: textureDescriptor)!
     self.intermediateDepthTexture.label = "Depth Texture"
-    
-    let depthStencilDescriptor = MTLDepthStencilDescriptor()
-    depthStencilDescriptor.depthCompareFunction = .greater
-    depthStencilDescriptor.isDepthWriteEnabled = true
-    depthStencilDescriptor.label = "Render Depth-Stencil State"
-    depthStencilState = device.makeDepthStencilState(descriptor: depthStencilDescriptor)!
     
     // Delegates
     

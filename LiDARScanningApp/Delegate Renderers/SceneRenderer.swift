@@ -14,15 +14,17 @@ class SceneRenderer: DelegateRenderer {
   var cameraPlaneDepth: Float = 2
   
   var scene2DPipelineState: MTLRenderPipelineState
+  var depthStencilState2: MTLDepthStencilState
   
   init(renderer: MainRenderer, library: MTLLibrary) {
     self.renderer = renderer
+    let device = renderer.device
     
     let desc = MTLRenderPipelineDescriptor()
     desc.rasterSampleCount = 4
     desc.depthAttachmentPixelFormat = .depth32Float
     desc.inputPrimitiveTopology = .triangle
-    desc.colorAttachments[0].pixelFormat = .bgr10_xr
+    desc.colorAttachments[0].pixelFormat = .bgra10_xr
     
     desc.vertexFunction = library.makeFunction(name: "scene2DVertexTransform")!
     desc.fragmentFunction = library.makeFunction(name: "scene2DFragmentShader")!
@@ -30,6 +32,12 @@ class SceneRenderer: DelegateRenderer {
     
     self.scene2DPipelineState = try!
       renderer.device.makeRenderPipelineState(descriptor: desc)
+    
+    let depthStencilDescriptor = MTLDepthStencilDescriptor()
+    depthStencilDescriptor.depthCompareFunction = .always
+    depthStencilDescriptor.isDepthWriteEnabled = false
+    depthStencilDescriptor.label = "Scene 2D Depth-Stencil State"
+    self.depthStencilState2 = device.makeDepthStencilState(descriptor: depthStencilDescriptor)!
   }
 }
 
@@ -46,7 +54,14 @@ extension SceneRenderer {
   func drawGeometry(renderEncoder: MTLRenderCommandEncoder) {
     // Ensure vertices are oriented in the right order.
     renderEncoder.setCullMode(.back)
+    
+    performSecondPass(renderEncoder: renderEncoder)
+  }
+  
+  func performSecondPass(renderEncoder: MTLRenderCommandEncoder) {
+    // TODO: Always remember to set the depth-stencil state during each pass.
     renderEncoder.setRenderPipelineState(scene2DPipelineState)
+    renderEncoder.setDepthStencilState(depthStencilState2)
     
     struct VertexUniforms {
       var projectionTransform: simd_float4x4

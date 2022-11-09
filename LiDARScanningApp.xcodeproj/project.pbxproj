@@ -26,7 +26,7 @@
 		98BB44E6291BFB290024C064 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44E5291BFB290024C064 /* UserSettings.swift */; };
 		98BB44E8291BFE3F0024C064 /* MathUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44E7291BFE3F0024C064 /* MathUtilities.swift */; };
 		98BB44EA291BFE530024C064 /* simdExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44E9291BFE530024C064 /* simdExtensions.swift */; };
-		98BB44EC291C4EC10024C064 /* LiDARMeshShader.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44EB291C4EC10024C064 /* LiDARMeshShader.metal */; };
+		98BB44EC291C4EC10024C064 /* LiDARMeshShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44EB291C4EC10024C064 /* LiDARMeshShaders.metal */; };
 		98BB44EF291C50820024C064 /* MemoryUtilities.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44EE291C50820024C064 /* MemoryUtilities.metal */; };
 		98BB44F1291C50BE0024C064 /* SceneMeshReduction.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44F0291C50BE0024C064 /* SceneMeshReduction.metal */; };
 		98BB44F3291C50CA0024C064 /* SceneMeshReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44F2291C50CA0024C064 /* SceneMeshReducer.swift */; };
@@ -57,7 +57,7 @@
 		98BB44E5291BFB290024C064 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		98BB44E7291BFE3F0024C064 /* MathUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathUtilities.swift; sourceTree = "<group>"; };
 		98BB44E9291BFE530024C064 /* simdExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = simdExtensions.swift; sourceTree = "<group>"; };
-		98BB44EB291C4EC10024C064 /* LiDARMeshShader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = LiDARMeshShader.metal; sourceTree = "<group>"; };
+		98BB44EB291C4EC10024C064 /* LiDARMeshShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = LiDARMeshShaders.metal; sourceTree = "<group>"; };
 		98BB44ED291C50710024C064 /* MemoryUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MemoryUtilities.h; sourceTree = "<group>"; };
 		98BB44EE291C50820024C064 /* MemoryUtilities.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = MemoryUtilities.metal; sourceTree = "<group>"; };
 		98BB44F0291C50BE0024C064 /* SceneMeshReduction.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SceneMeshReduction.metal; sourceTree = "<group>"; };
@@ -144,7 +144,7 @@
 				98BB44DF291BF4F00024C064 /* DelegateRenderer.swift */,
 				986E33D8291AAAFD00172610 /* Scene2DShaders.metal */,
 				98BB44E5291BFB290024C064 /* UserSettings.swift */,
-				98BB44EB291C4EC10024C064 /* LiDARMeshShader.metal */,
+				98BB44EB291C4EC10024C064 /* LiDARMeshShaders.metal */,
 				98BB44F0291C50BE0024C064 /* SceneMeshReduction.metal */,
 				98BB44F2291C50CA0024C064 /* SceneMeshReducer.swift */,
 			);
@@ -240,7 +240,7 @@
 			files = (
 				98BB44F7291C51330024C064 /* MTLLayeredBuffer.swift in Sources */,
 				986E33E5291AAF3200172610 /* DeviceMeasurements.swift in Sources */,
-				98BB44EC291C4EC10024C064 /* LiDARMeshShader.metal in Sources */,
+				98BB44EC291C4EC10024C064 /* LiDARMeshShaders.metal in Sources */,
 				986E33DD291AAE8400172610 /* CameraMeasurements.swift in Sources */,
 				986E33DB291AAC8B00172610 /* CoreVideoExtensions.swift in Sources */,
 				986E33C8291AA42900172610 /* ContentView.swift in Sources */,
