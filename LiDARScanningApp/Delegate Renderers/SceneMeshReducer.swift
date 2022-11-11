@@ -25,9 +25,9 @@ final class SceneMeshReducer: DelegateRenderer {
       var reducedIndexBuffer: MTLBuffer!
   
   var preCullVertexCount: Int!
-      var preCullTriangleCount: Int!
-      var preCullVertexCountOffset: Int { renderIndex * MemoryLayout<UInt32>.stride }
-      var preCullTriangleCountOffset: Int { renderIndex * MemoryLayout<UInt32>.stride }
+  var preCullTriangleCount: Int!
+  var preCullVertexCountOffset: Int { renderIndex * MemoryLayout<UInt32>.stride }
+  var preCullTriangleCountOffset: Int { renderIndex * MemoryLayout<UInt32>.stride }
   
   // MARK: - SceneMeshReducer properties
   

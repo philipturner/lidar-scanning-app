@@ -113,6 +113,7 @@ extension MainRenderer {
     }
     
     updateUniforms(frame: frame)
+    
     DispatchQueue.global(qos: .userInteractive).async {
       self.asyncUpdateTextures(frame: frame)
       self.updateTexturesSemaphore.signal()
@@ -162,6 +163,7 @@ extension MainRenderer {
   func updateUniforms(frame: ARFrame) {
     renderIndex = (renderIndex + 1) % 3
     cameraMeasurements.updateResources(frame: frame)
+    sceneRenderer.updateResources(frame: frame)
   }
   
   func asyncUpdateTextures(frame: ARFrame) {

@@ -6,17 +6,27 @@
 //
 
 import Metal
-import simd
+import ARKit
 
 class SceneRenderer: DelegateRenderer {
   unowned let renderer: MainRenderer
   
   var cameraPlaneDepth: Float = 2
+  var triangleCount: Int = 0
+  var lineCount: Int { 3 * triangleCount }
   
   var zPrePassPipelineState: MTLRenderPipelineState
   var scene2DPipelineState: MTLRenderPipelineState
-  // sceneMeshLinePipelineState
+  var sceneMeshLinePipelineState: MTLRenderPipelineState
   // sceneMeshTrianglePipelineState
+  
+  // Triple-buffered to make handling discrepancies between frames simpler.
+  var lineIndexBuffer: MTLBuffer
+  var lineIndexOffset: Int { (lineIndexBuffer.length / 3) * renderIndex }
+  var triangleIndexBuffer: MTLBuffer
+  var triangleIndexOffset: Int { (triangleIndexBuffer.length / 3) * renderIndex }
+  
+  var prepareMeshIndicesPipelineState: MTLComputePipelineState
   
   var depthStencilState1: MTLDepthStencilState
   var depthStencilState2: MTLDepthStencilState
@@ -25,6 +35,8 @@ class SceneRenderer: DelegateRenderer {
   init(renderer: MainRenderer, library: MTLLibrary) {
     self.renderer = renderer
     let device = renderer.device
+    
+    // MARK: - Render Pipeline States
     
     let desc = MTLRenderPipelineDescriptor()
     desc.rasterSampleCount = 1
@@ -50,6 +62,40 @@ class SceneRenderer: DelegateRenderer {
       renderer.device.makeRenderPipelineState(descriptor: desc)
     
     desc.reset() // Reset everything
+    desc.rasterSampleCount = 4
+    desc.depthAttachmentPixelFormat = .depth32Float
+    desc.inputPrimitiveTopology = .line
+    desc.colorAttachments[0].pixelFormat = .bgr10_xr
+    
+    desc.vertexFunction = library.makeFunction(name: "lidarMeshVertexTransform")!
+    desc.fragmentFunction = library.makeFunction(name: "lidarMeshLineFragmentShader")!
+    desc.label = "Scene Mesh Line Render Pipeline"
+    self.sceneMeshLinePipelineState = try!
+      renderer.device.makeRenderPipelineState(descriptor: desc)
+    
+    // MARK: - Compute Pipeline States
+    
+    // Making these small to debug them.
+    let lineCapacity = 128
+    let triangleCapacity = 128
+    
+    let lineIndexBufferSize = 3
+      * lineCapacity * MemoryLayout<simd_uint2>.stride
+    let triangleIndexBufferSize =
+      3 * triangleCapacity * MemoryLayout<simd_packed_uint3>.stride
+    self.lineIndexBuffer = device.makeBuffer(
+      length: lineIndexBufferSize, options: .storageModeShared)!
+    self.triangleIndexBuffer = device.makeBuffer(
+      length: triangleIndexBufferSize, options: .storageModeShared)!
+    self.lineIndexBuffer.label = "Mesh Line Index Buffer"
+    self.triangleIndexBuffer.label = "Mesh Triangle Index Buffer"
+    
+    let prepareMeshIndicesFunction =
+      library.makeFunction(name: "prepareMeshIndices")!
+    self.prepareMeshIndicesPipelineState = try!
+      device.makeComputePipelineState(function: prepareMeshIndicesFunction)
+    
+    // MARK: - Depth-Stencil Pipeline States
     
     let depthStencilDescriptor = MTLDepthStencilDescriptor()
     depthStencilDescriptor.depthCompareFunction = .greater
@@ -80,14 +126,38 @@ extension SceneRenderer {
   //
   // Regarding the last step:
   // - Render wireframe as green and bright, when visible IRL.
-  // - Render visible triangles in a transparent green, in a second render pass.
+  // - [Cancelled] Render visible triangles in a transparent green, in a second
+  //   render pass.
   // - Render wireframe as red and dimmer, when occluded by furniture.
+  
+  func updateResources(frame: ARFrame) {
+    if let numTriangles = renderer.sceneMeshReducer.preCullTriangleCount {
+      self.triangleCount = numTriangles
+    } else {
+      self.triangleCount = 0
+    }
+    
+    self.ensureBufferCapacity(type: .triangle, capacity: triangleCount)
+  }
+  
+  // Prepares mesh indices and renders to the Z buffer.
   func drawZBuffer(commandBuffer: MTLCommandBuffer) {
     guard let vertexBuffer = renderer.sceneMeshReducer.reducedVertexBuffer,
-          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer else {
+          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer,
+          triangleCount > 0 else {
       // Cannot render scene mesh.
       return
     }
+    
+    let computeEncoder = commandBuffer.makeComputeCommandEncoder()!
+    computeEncoder.setComputePipelineState(prepareMeshIndicesPipelineState)
+    computeEncoder.setBuffer(indexBuffer, offset: 0, index: 0)
+    computeEncoder.setBuffer(
+      lineIndexBuffer, offset: lineIndexOffset, index: 1)
+    computeEncoder.setBuffer(
+      triangleIndexBuffer, offset: triangleIndexOffset, index: 2)
+    computeEncoder.dispatchThreads([ lineCount ], threadsPerThreadgroup: 1)
+    computeEncoder.endEncoding()
     
     let renderPassDescriptor = MTLRenderPassDescriptor()
     renderPassDescriptor.defaultRasterSampleCount = 1
@@ -109,9 +179,9 @@ extension SceneRenderer {
     
     renderEncoder.drawIndexedPrimitives(
       type: .triangle,
-      indexCount: renderer.sceneMeshReducer.preCullTriangleCount * 3,
+      indexCount: self.triangleCount * 3,
       indexType: .uint32,
-      indexBuffer: indexBuffer,
+      indexBuffer: self.triangleIndexBuffer,
       indexBufferOffset: 0,
       instanceCount: 1)
     renderEncoder.endEncoding()
@@ -125,6 +195,7 @@ extension SceneRenderer {
     // Allow back-facing lines to render.
     renderEncoder.setCullMode(.none)
     performSecondPass(renderEncoder: renderEncoder)
+    performThirdPass(renderEncoder: renderEncoder)
   }
   
   func performSecondPass(renderEncoder: MTLRenderCommandEncoder) {
@@ -159,19 +230,22 @@ extension SceneRenderer {
   
   func performThirdPass(renderEncoder: MTLRenderCommandEncoder) {
     guard let vertexBuffer = renderer.sceneMeshReducer.reducedVertexBuffer,
-          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer else {
+          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer,
+          triangleCount > 0 else {
       // Cannot render scene mesh.
       return
     }
   }
   
+  // [Cancelled]
   // Needed a memory barrier to preserve opacity. Apple GPUs cannot have a
   // fragment-to-fragment barriers. A raster order group might be acceptable,
   // except you must pass the framebuffer as a shader argument. It's easier to
   // just create a new render pass.
   func finishRenderPass(renderEncoder: MTLRenderCommandEncoder) {
     guard let vertexBuffer = renderer.sceneMeshReducer.reducedVertexBuffer,
-          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer else {
+          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer,
+          triangleCount > 0 else {
       // Cannot render scene mesh.
       return
     }
@@ -179,4 +253,36 @@ extension SceneRenderer {
     // Do not let back-facing triangles interfere.
     renderEncoder.setCullMode(.back)
   }
+}
+
+extension SceneRenderer: BufferExpandable {
+  
+  enum BufferType: CaseIterable {
+    case triangle
+  }
+  
+  func ensureBufferCapacity(type: BufferType, capacity: Int) {
+    let newCapacity = roundUpToPowerOf2(capacity)
+    
+    switch type {
+    case .triangle: ensureTriangleCapacity(capacity: newCapacity)
+    }
+  }
+  
+  private func ensureTriangleCapacity(capacity: Int) {
+    let lineIndexBufferSize = 3 * 3 * capacity * MemoryLayout<simd_uint2>.stride
+    if lineIndexBuffer.length < lineIndexBufferSize {
+      lineIndexBuffer = device.makeBuffer(
+        length: lineIndexBufferSize, options: .storageModeShared)!
+      lineIndexBuffer.label = "Mesh Line Index Buffer"
+    }
+    
+    let triangleIndexBufferSize = 3 * capacity * MemoryLayout<simd_uint3>.stride
+    if triangleIndexBuffer.length < triangleIndexBufferSize {
+      triangleIndexBuffer = device.makeBuffer(
+        length: lineIndexBufferSize, options: .storageModeShared)!
+      triangleIndexBuffer.label = "Mesh Triangle Index Buffer"
+    }
+  }
+  
 }

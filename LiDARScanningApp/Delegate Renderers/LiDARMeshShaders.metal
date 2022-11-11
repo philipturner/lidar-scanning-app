@@ -16,10 +16,35 @@ typedef struct {
   float4 position [[position]];
 } VertexInOut;
 
+[[kernel]]
+void prepareMeshIndices(
+  device uint3* input_indices [[buffer(0)]],
+  device uint2* output_line_indices [[buffer(1)]],
+  device packed_uint3 *output_triangle_indices [[buffer(2)]],
+  uint tid [[thread_position_in_grid]]
+) {
+  // Find identifying addresses. Not optimizing integer modulus because it's
+  // more important to debug this.
+  uint triangle_id = tid / 3;
+  uint id_in_triangle = tid % 3;
+  uint next_id_in_triangle = (id_in_triangle + 1) % 3;
+  
+  // Fetch and rearrange triangle indices.
+  uint3 triangle_indices = input_indices[triangle_id];
+  uint2 line_indices(triangle_indices[id_in_triangle],
+                     triangle_indices[next_id_in_triangle]);
+  
+  // Store compressed indices.
+  output_line_indices[tid] = line_indices;
+  if (id_in_triangle == 0) {
+    output_triangle_indices[triangle_id] = triangle_indices;
+  }
+}
+
 [[vertex]]
 VertexInOut lidarMeshVertexTransform(
   constant VertexUniforms &vertexUniforms [[buffer(0)]],
-  const device packed_float3 *vertices [[buffer(1)]],
+  const device float3 *vertices [[buffer(1)]],
   uint vid [[vertex_id]]
 ) {
   float4 position =
