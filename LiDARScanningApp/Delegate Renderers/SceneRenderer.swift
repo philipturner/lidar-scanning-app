@@ -14,11 +14,14 @@ class SceneRenderer: DelegateRenderer {
   var cameraPlaneDepth: Float = 2
   var triangleCount: Int = 0
   var lineCount: Int { 3 * triangleCount }
+  var projectionTransform = simd_float4x4(1)
+  var reducedVertexBuffer: MTLBuffer!
+  var reducedIndexBuffer: MTLBuffer!
   
   var zPrePassPipelineState: MTLRenderPipelineState
   var scene2DPipelineState: MTLRenderPipelineState
   var sceneMeshLinePipelineState: MTLRenderPipelineState
-  // sceneMeshTrianglePipelineState
+  // [Cancelled] sceneMeshTrianglePipelineState
   
   // Triple-buffered to make handling discrepancies between frames simpler.
   var lineIndexBuffer: MTLBuffer
@@ -39,7 +42,7 @@ class SceneRenderer: DelegateRenderer {
     // MARK: - Render Pipeline States
     
     let desc = MTLRenderPipelineDescriptor()
-    desc.rasterSampleCount = 1
+    desc.rasterSampleCount = 1//4//1
     desc.depthAttachmentPixelFormat = .depth32Float
     desc.inputPrimitiveTopology = .triangle
     // descriptor has no color attachments
@@ -50,7 +53,7 @@ class SceneRenderer: DelegateRenderer {
       renderer.device.makeRenderPipelineState(descriptor: desc)
     
     desc.reset() // Reset everything
-    desc.rasterSampleCount = 4
+    desc.rasterSampleCount = 1//4
     desc.depthAttachmentPixelFormat = .depth32Float
     desc.inputPrimitiveTopology = .triangle
     desc.colorAttachments[0].pixelFormat = .bgra10_xr
@@ -62,10 +65,10 @@ class SceneRenderer: DelegateRenderer {
       renderer.device.makeRenderPipelineState(descriptor: desc)
     
     desc.reset() // Reset everything
-    desc.rasterSampleCount = 4
+    desc.rasterSampleCount = 1//4
     desc.depthAttachmentPixelFormat = .depth32Float
     desc.inputPrimitiveTopology = .line
-    desc.colorAttachments[0].pixelFormat = .bgr10_xr
+    desc.colorAttachments[0].pixelFormat = .bgra10_xr
     
     desc.vertexFunction = library.makeFunction(name: "lidarMeshVertexTransform")!
     desc.fragmentFunction = library.makeFunction(name: "lidarMeshLineFragmentShader")!
@@ -110,7 +113,7 @@ class SceneRenderer: DelegateRenderer {
     self.depthStencilState2 = device.makeDepthStencilState(
       descriptor: depthStencilDescriptor)!
     
-    depthStencilDescriptor.depthCompareFunction = .always
+    depthStencilDescriptor.depthCompareFunction = .greaterEqual
     depthStencilDescriptor.isDepthWriteEnabled = false
     depthStencilDescriptor.label = "Scene Mesh Depth-Stencil State"
     self.depthStencilState3 = device.makeDepthStencilState(
@@ -131,19 +134,27 @@ extension SceneRenderer {
   // - Render wireframe as red and dimmer, when occluded by furniture.
   
   func updateResources(frame: ARFrame) {
-    if let numTriangles = renderer.sceneMeshReducer.preCullTriangleCount {
+    let sceneMeshReducer = renderer.sceneMeshReducer!
+    if let numTriangles = sceneMeshReducer.preCullTriangleCount {
       self.triangleCount = numTriangles
     } else {
       self.triangleCount = 0
     }
+    self.projectionTransform =
+      worldToScreenClipTransform * sceneMeshReducer.meshToWorldTransform
     
+    self.reducedVertexBuffer = sceneMeshReducer.reducedVertexBuffer
+    self.reducedIndexBuffer = sceneMeshReducer.reducedIndexBuffer
     self.ensureBufferCapacity(type: .triangle, capacity: triangleCount)
   }
   
   // Prepares mesh indices and renders to the Z buffer.
+  // [Cancelled] Problems with fragment shader prevent me from doing these
+  // fancy rendering effects. However, I still rely on the compute pass that
+  // transforms indices.
   func drawZBuffer(commandBuffer: MTLCommandBuffer) {
-    guard let vertexBuffer = renderer.sceneMeshReducer.reducedVertexBuffer,
-          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer,
+    guard let vertexBuffer = self.reducedVertexBuffer,
+          let indexBuffer = self.reducedIndexBuffer,
           triangleCount > 0 else {
       // Cannot render scene mesh.
       return
@@ -160,10 +171,12 @@ extension SceneRenderer {
     computeEncoder.endEncoding()
     
     let renderPassDescriptor = MTLRenderPassDescriptor()
-    renderPassDescriptor.defaultRasterSampleCount = 1
+    renderPassDescriptor.defaultRasterSampleCount = 1//4//1
     renderPassDescriptor.depthAttachment.texture = renderer.intermediateDepthTexture
     renderPassDescriptor.depthAttachment.clearDepth = 0
-    
+    // Need to store the depths for further use.
+    renderPassDescriptor.depthAttachment.storeAction = .store
+
     // Don't cull any triangles; backwards-facing ones should still be red.
     let renderEncoder = commandBuffer.makeRenderCommandEncoder(
       descriptor: renderPassDescriptor)!
@@ -171,18 +184,17 @@ extension SceneRenderer {
     renderEncoder.setCullMode(.none)
     renderEncoder.setRenderPipelineState(zPrePassPipelineState)
     renderEncoder.setDepthStencilState(depthStencilState1)
-    
-    var projectionTransform = worldToScreenClipTransform * cameraToWorldTransform
+
     renderEncoder.setVertexBytes(
-      &projectionTransform, length: MemoryLayout<simd_float4x4>.stride, index: 0)
+      &self.projectionTransform, length: MemoryLayout<simd_float4x4>.stride, index: 0)
     renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 1)
-    
+
     renderEncoder.drawIndexedPrimitives(
       type: .triangle,
       indexCount: self.triangleCount * 3,
       indexType: .uint32,
       indexBuffer: self.triangleIndexBuffer,
-      indexBufferOffset: 0,
+      indexBufferOffset: self.triangleIndexOffset,
       instanceCount: 1)
     renderEncoder.endEncoding()
   }
@@ -229,12 +241,28 @@ extension SceneRenderer {
   }
   
   func performThirdPass(renderEncoder: MTLRenderCommandEncoder) {
-    guard let vertexBuffer = renderer.sceneMeshReducer.reducedVertexBuffer,
-          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer,
+    guard let vertexBuffer = self.reducedVertexBuffer,
+          let indexBuffer = self.reducedIndexBuffer,
           triangleCount > 0 else {
       // Cannot render scene mesh.
       return
     }
+    
+    renderEncoder.setRenderPipelineState(sceneMeshLinePipelineState)
+    renderEncoder.setDepthStencilState(depthStencilState3)
+    
+    renderEncoder.setVertexBytes(
+      &self.projectionTransform, length: MemoryLayout<simd_float4x4>.stride, index: 0)
+    renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 1)
+    renderEncoder.setFragmentTexture(renderer.intermediateDepthTexture, index: 0)
+    
+    renderEncoder.drawIndexedPrimitives(
+      type: .line,
+      indexCount: self.lineCount * 2,
+      indexType: .uint32,
+      indexBuffer: self.lineIndexBuffer,
+      indexBufferOffset: self.lineIndexOffset,
+      instanceCount: 1)
   }
   
   // [Cancelled]
@@ -243,8 +271,8 @@ extension SceneRenderer {
   // except you must pass the framebuffer as a shader argument. It's easier to
   // just create a new render pass.
   func finishRenderPass(renderEncoder: MTLRenderCommandEncoder) {
-    guard let vertexBuffer = renderer.sceneMeshReducer.reducedVertexBuffer,
-          let indexBuffer = renderer.sceneMeshReducer.reducedIndexBuffer,
+    guard let vertexBuffer = self.reducedVertexBuffer,
+          let indexBuffer = self.reducedIndexBuffer,
           triangleCount > 0 else {
       // Cannot render scene mesh.
       return

@@ -13,7 +13,7 @@ typedef struct {
 } VertexUniforms;
 
 typedef struct {
-  float4 position [[position]];
+  float4 position [[position, invariant]];
 } VertexInOut;
 
 [[kernel]]
@@ -60,21 +60,60 @@ typedef struct {
 // triangle shader that has opacity.
 [[fragment]]
 FragmentOut lidarMeshLineFragmentShader(
-  VertexInOut in [[stage_in]],
-  depth2d<float, access::sample> depthTexture [[texture(0)]]
+  VertexInOut in [[stage_in]]//,
+  // I give up on trying to sample the depth texture.
+//  bool direction [[front_facing]]
+  // Also front-facing doesn't work for lines.
+//  depth2d<float, access::sample> depthTexture [[texture(0)]]//,
+//  uint sid [[sample_id]]
 ) {
-  constexpr sampler depthSampler(filter::linear, coord::normalized);
+  // Sadly, I couldn't implement any special render effects.
+  return { half4(0, 1, 0, 0) };
   
-  // Larger depths mean closer to the camera; this is part of the algorithm that
-  // redistributes dynamic range to preserve more information.
-  // TODO: Validate that in.xy actually correlates to texture coordinates.
-  float depth = depthTexture.sample(depthSampler, in.position.xy);
+//  if (direction) {
+//    // Front-facing
+//    return { half4(0, 1, 0, 0) };
+//  } else {
+//    // Back-facing
+//    return { half4(1, 0, 0, 0) };
+//  }
+//
+//  // Fragment (x,y) are in pixels, hence `coord::pixel`.
+//  constexpr sampler depthSampler(filter::nearest, coord::pixel);
+//
+//  // Larger depths mean closer to the camera; this is part of the algorithm that
+//  // redistributes dynamic range to preserve more information.
+//  // TODO: Validate that in.xy actually correlates to texture coordinates.
+//  float depth = depthTexture.sample(depthSampler, in.position.xy);
+//  if (depth == 0) {
+//    // At the edge, it's always zero. Cannot find a way to bypass this.
+//    float4 gathered_depth = depthTexture.gather(depthSampler, in.position.xy);
+//
+//    for (int i = 0; i < 4; ++i) {
+//      if (gathered_depth[i] != 0) {
+//        depth = gathered_depth[i];
+//        break;
+//      }
+//    }
+//  }
+//
+//  if (depth == 0 && depth != in.position.z) {
+//    return { half4(1, 1, 1, 1) };
+//  }
+//
+//  if (depth >= in.position.z) {
+//    return { half4(0, 1, 0, 1) };
+//  } else {
+//    return { half4(1, 0, 0, 1) };
+//  }
   
-  if (in.position.z >= depth) {
-    // Green
-    return { half4(0, 1, 0, 1) };
-  } else {
-    // Red
-    return { half4(1, 0, 0, 1) };
-  }
+//  return { half4(float4(depth, 1 - depth, -1 - depth, 1)) };
+  
+//  if (in.position.z >= depth) {
+//    // Green
+//    return { half4(0, 1, 0, 1) };
+//  } else {
+//    // Red
+//    return { half4(1, 0, 0, 1) };
+//  }
 }

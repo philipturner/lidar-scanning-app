@@ -60,9 +60,9 @@ class MainRenderer {
     textureDescriptor.height = Int(bounds.width)
     
     textureDescriptor.usage = .renderTarget
-    textureDescriptor.textureType = .type2DMultisample
+    textureDescriptor.textureType = .type2D//.type2DMultisample
     textureDescriptor.storageMode = .memoryless
-    textureDescriptor.sampleCount = 4
+    textureDescriptor.sampleCount = 1//4
     
     textureDescriptor.pixelFormat = view.colorPixelFormat
     self.msaaTexture = device.makeTexture(descriptor: textureDescriptor)!
@@ -73,12 +73,13 @@ class MainRenderer {
     self.depthTexture = device.makeTexture(descriptor: textureDescriptor)!
     self.depthTexture.label = "Depth Texture"
     
-    // Store the intermediate depth texture so a later render pass can read from
-    // it. Also, don't make it multisample. That would use a lot of memory and
-    // possibly reduce frame rate.
+//     Store the intermediate depth texture so a later render pass can read from
+//     it. Also, don't make it multisample. That would use a lot of memory and
+//     possibly reduce frame rate.
+    textureDescriptor.usage = [.renderTarget, .shaderRead]
     textureDescriptor.storageMode = .private
-    textureDescriptor.textureType = .type2D
-    textureDescriptor.sampleCount = 1
+//    textureDescriptor.textureType = .type2D
+    textureDescriptor.sampleCount = 1//4//1
     self.intermediateDepthTexture = device.makeTexture(descriptor: textureDescriptor)!
     self.intermediateDepthTexture.label = "Depth Texture"
     
@@ -104,7 +105,7 @@ extension MainRenderer {
 
 extension MainRenderer {
   func update() {
-    print(Optional(sceneMeshReducer.reducedVertexBuffer))
+    print(Date())///, Optional(sceneMeshReducer.reducedVertexBuffer))
     
     renderSemaphore.wait()
     guard let frame = session.currentFrame else {
@@ -135,12 +136,12 @@ extension MainRenderer {
     let drawable = view.currentDrawable!
     
     let renderPassDescriptor = MTLRenderPassDescriptor()
-    renderPassDescriptor.colorAttachments[0].texture = msaaTexture
+    renderPassDescriptor.colorAttachments[0].texture = drawable.texture//msaaTexture
     renderPassDescriptor.colorAttachments[0].loadAction = .clear
-    renderPassDescriptor.colorAttachments[0].storeAction = .multisampleResolve
-    renderPassDescriptor.colorAttachments[0].resolveTexture = drawable.texture
+    renderPassDescriptor.colorAttachments[0].storeAction = .store//.multisampleResolve
+//    renderPassDescriptor.colorAttachments[0].resolveTexture = drawable.texture
     // Depth texture technically not necessary.
-    renderPassDescriptor.depthAttachment.texture = depthTexture
+    renderPassDescriptor.depthAttachment.texture = intermediateDepthTexture//depthTexture
     renderPassDescriptor.depthAttachment.clearDepth = 0
     
     let renderEncoder = commandBuffer.makeRenderCommandEncoder(
@@ -149,10 +150,9 @@ extension MainRenderer {
     
     // Draw the scene geometry.
     sceneRenderer.drawGeometry(renderEncoder: renderEncoder)
-    
     renderEncoder.endEncoding()
     
-    // TODO: Make another render encoder for the second pass.
+    // [Cancelled] TODO: Make another render encoder for the second pass.
     commandBuffer.present(drawable)
     commandBuffer.commit()
     
