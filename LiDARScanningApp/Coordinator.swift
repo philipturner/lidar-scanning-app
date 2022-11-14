@@ -13,6 +13,10 @@ class Coordinator: NSObject, ObservableObject {
   var session: ARSession
   var view: MTKView
   var renderer: MainRenderer!
+  var gestureRecognizer: UILongPressGestureRecognizer
+  
+  @Published var isSharePresented: Bool = false
+  var fileToExport: Data?
   
   override init() {
     self.session = ARSession()
@@ -39,6 +43,10 @@ class Coordinator: NSObject, ObservableObject {
     session.run(configuration)
     
     self.view = MTKView()
+    self.gestureRecognizer = UILongPressGestureRecognizer()
+    self.gestureRecognizer.allowableMovement = .greatestFiniteMagnitude
+    self.gestureRecognizer.minimumPressDuration = 0
+    self.view.addGestureRecognizer(self.gestureRecognizer)
     
     let nativeBounds = UIScreen.main.nativeBounds
     view.drawableSize = .init(width: nativeBounds.height, height: nativeBounds.width)
@@ -66,5 +74,10 @@ extension Coordinator: MTKViewDelegate {
   func draw(in view: MTKView) {
     precondition(view == self.view, "Incorrect MTKView.")
     renderer.update()
+    
+    if gestureRecognizer.state != .possible {
+      self.isSharePresented = true
+      self.fileToExport = renderer.sceneMeshReducer.exportData()
+    }
   }
 }

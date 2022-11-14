@@ -11,7 +11,7 @@ import SwiftUI
 struct LiDARScanningAppApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+          ContentView(coordinator: Coordinator())
         }
     }
 }

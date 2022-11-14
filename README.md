@@ -10,6 +10,7 @@ Mesh serialization format:
 UInt32 - Number of vertices
 UInt32 - Number of indices
 UInt32 - Number of normals
+4 bytes of padding
 [SIMD3<Float>] - Vertices; array of coordinate vectors aligned to 16B
 [SIMD3<UInt32>] - Indices; array of triangle index triples aligned to 16B
 [SIMD3<Float] - Normals; array of direction vectors aligned to 16B

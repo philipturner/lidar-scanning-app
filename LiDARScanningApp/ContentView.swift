@@ -9,11 +9,25 @@ import SwiftUI
 import MetalKit
 
 struct ContentView: View {
+  @ObservedObject var coordinator: Coordinator
     var body: some View {
       ZStack {
-        ARDisplayView(coordinator: Coordinator())
+        ZStack {
+          ARDisplayView(coordinator: coordinator)
+        }
+        .ignoresSafeArea(.all)
       }
-      .ignoresSafeArea(.all)
+      .sheet(isPresented: $coordinator.isSharePresented, content: {
+        if let file: Data = {
+          // Reset to permit exporting multiple times.
+          // Cannot do this easily in SwiftUI, hence the bypass.
+          let temp = coordinator.fileToExport
+          coordinator.fileToExport = nil
+          return temp
+        }() {
+          ActivityViewController(fileToExport: file)
+        }
+      })
     }
 }
 

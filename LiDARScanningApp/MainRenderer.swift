@@ -105,8 +105,6 @@ extension MainRenderer {
 
 extension MainRenderer {
   func update() {
-    print(Date())///, Optional(sceneMeshReducer.reducedVertexBuffer))
-    
     renderSemaphore.wait()
     guard let frame = session.currentFrame else {
       renderSemaphore.signal()

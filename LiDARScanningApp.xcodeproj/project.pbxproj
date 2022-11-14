@@ -20,6 +20,7 @@
 		986E33E3291AAF2100172610 /* DeviceMeasurementProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E2291AAF2100172610 /* DeviceMeasurementProvider.swift */; };
 		986E33E5291AAF3200172610 /* DeviceMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E4291AAF3200172610 /* DeviceMeasurements.swift */; };
 		986E33E7291AAF4200172610 /* FutureDeviceMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 986E33E6291AAF4200172610 /* FutureDeviceMeasurements.swift */; };
+		98A5FB4E2922F643002567F6 /* ActivityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A5FB4D2922F643002567F6 /* ActivityViewController.swift */; };
 		98BB44DE291BF4C60024C064 /* SceneRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44DD291BF4C60024C064 /* SceneRenderer.swift */; };
 		98BB44E0291BF4F00024C064 /* DelegateRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44DF291BF4F00024C064 /* DelegateRenderer.swift */; };
 		98BB44E4291BF7620024C064 /* ColorUtilities.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98BB44E3291BF7620024C064 /* ColorUtilities.metal */; };
@@ -50,6 +51,7 @@
 		986E33E2291AAF2100172610 /* DeviceMeasurementProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMeasurementProvider.swift; sourceTree = "<group>"; };
 		986E33E4291AAF3200172610 /* DeviceMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceMeasurements.swift; sourceTree = "<group>"; };
 		986E33E6291AAF4200172610 /* FutureDeviceMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FutureDeviceMeasurements.swift; sourceTree = "<group>"; };
+		98A5FB4D2922F643002567F6 /* ActivityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityViewController.swift; sourceTree = "<group>"; };
 		98BB44DD291BF4C60024C064 /* SceneRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneRenderer.swift; sourceTree = "<group>"; };
 		98BB44DF291BF4F00024C064 /* DelegateRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DelegateRenderer.swift; sourceTree = "<group>"; };
 		98BB44E2291BF74C0024C064 /* ColorUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ColorUtilities.h; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 				986E33CB291AA42A00172610 /* Preview Content */,
 				986E33D3291AA5FE00172610 /* Coordinator.swift */,
 				986E33D6291AA9F700172610 /* MainRenderer.swift */,
+				98A5FB4D2922F643002567F6 /* ActivityViewController.swift */,
 			);
 			path = LiDARScanningApp;
 			sourceTree = "<group>";
@@ -257,6 +260,7 @@
 				986E33D4291AA5FE00172610 /* Coordinator.swift in Sources */,
 				98BB44EA291BFE530024C064 /* simdExtensions.swift in Sources */,
 				98BB44E6291BFB290024C064 /* UserSettings.swift in Sources */,
+				98A5FB4E2922F643002567F6 /* ActivityViewController.swift in Sources */,
 				98BB44EF291C50820024C064 /* MemoryUtilities.metal in Sources */,
 				986E33D9291AAAFD00172610 /* Scene2DShaders.metal in Sources */,
 				98BB44F3291C50CA0024C064 /* SceneMeshReducer.swift in Sources */,

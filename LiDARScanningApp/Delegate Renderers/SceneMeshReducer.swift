@@ -24,6 +24,55 @@ final class SceneMeshReducer: DelegateRenderer {
       var reducedColorBuffer: MTLBuffer! // NOTE: this buffer isn't used for this app
       var reducedIndexBuffer: MTLBuffer!
   
+  func exportData() -> Data? {
+    guard let reducedVertexBuffer = reducedVertexBuffer,
+          let reducedIndexBuffer = reducedIndexBuffer,
+          let reducedNormalBuffer = reducedNormalBuffer,
+          let numVertices = preCullVertexCount,
+          let numIndices = preCullTriangleCount,
+          let numNormals = preCullVertexCount else {
+      return nil
+    }
+    
+    // Headers + padding
+    var memorySize = 3 * MemoryLayout<UInt32>.stride + 4
+    precondition(memorySize == 16)
+    memorySize += numVertices * MemoryLayout<SIMD3<Float>>.stride
+    memorySize += numIndices * MemoryLayout<SIMD3<Float>>.stride
+    memorySize += numNormals * MemoryLayout<SIMD3<Float>>.stride
+    
+    // Create pointer
+    var byteStream = malloc(memorySize)!
+    let originalPointer = byteStream
+    
+    // Write headers
+    let headersPointer = byteStream.assumingMemoryBound(to: UInt32.self)
+    headersPointer[0] = UInt32(numVertices)
+    headersPointer[1] = UInt32(numIndices)
+    headersPointer[2] = UInt32(numNormals)
+    headersPointer[3] = UInt32(0)
+    byteStream += 16
+    
+    // Exploits the fact that every section uses 16-byte elements
+    func write(buffer: MTLBuffer, numElements: Int) {
+      let src = buffer.contents()
+      let dst = byteStream
+      let len = numElements * 16
+      memcpy(src, dst, len)
+      byteStream += len
+    }
+    
+    // Write data
+    write(buffer: reducedVertexBuffer, numElements: numVertices)
+    write(buffer: reducedIndexBuffer, numElements: numIndices)
+    write(buffer: reducedNormalBuffer, numElements: numNormals)
+    
+    // Validate and export
+    precondition(byteStream - originalPointer == memorySize)
+    return Data(
+      bytesNoCopy: originalPointer, count: memorySize, deallocator: .free)
+  }
+  
   var preCullVertexCount: Int!
   var preCullTriangleCount: Int!
   var preCullVertexCountOffset: Int { renderIndex * MemoryLayout<UInt32>.stride }
@@ -186,32 +235,32 @@ final class SceneMeshReducer: DelegateRenderer {
         pendingSectorIDBuffer.optLabel = "Scene Mesh Reducer Sector ID Buffer (Pending)"
         
         let transientSectorIDBufferSize = triangleCapacity * MemoryLayout<UInt8>.stride
-        transientSectorIDBuffer = device.makeBuffer(length: transientSectorIDBufferSize, options: .storageModePrivate)!
+        transientSectorIDBuffer = device.makeBuffer(length: transientSectorIDBufferSize, options: .storageModeShared)!
         transientSectorIDBuffer.optLabel = "Scene Mesh Reducer Transient Sector ID Buffer"
         
         
         
         let reducedVertexBufferSize = vertexCapacity * MemoryLayout<simd_float3>.stride
-        currentReducedVertexBuffer = device.makeBuffer(length: reducedVertexBufferSize, options: .storageModePrivate)!
-        pendingReducedVertexBuffer = device.makeBuffer(length: reducedVertexBufferSize, options: .storageModePrivate)!
+        currentReducedVertexBuffer = device.makeBuffer(length: reducedVertexBufferSize, options: .storageModeShared)!
+        pendingReducedVertexBuffer = device.makeBuffer(length: reducedVertexBufferSize, options: .storageModeShared)!
         currentReducedVertexBuffer.optLabel = "Scene Reduced Vertex Buffer (Not Used Yet)"
         pendingReducedVertexBuffer.optLabel = "Scene Reduced Vertex Buffer (Pending)"
         
         let reducedNormalBufferSize = vertexCapacity * MemoryLayout<simd_half3>.stride
-        currentReducedNormalBuffer = device.makeBuffer(length: reducedNormalBufferSize, options: .storageModePrivate)!
-        pendingReducedNormalBuffer = device.makeBuffer(length: reducedNormalBufferSize, options: .storageModePrivate)!
+        currentReducedNormalBuffer = device.makeBuffer(length: reducedNormalBufferSize, options: .storageModeShared)!
+        pendingReducedNormalBuffer = device.makeBuffer(length: reducedNormalBufferSize, options: .storageModeShared)!
         currentReducedNormalBuffer.optLabel = "Scene Reduced Normal Buffer (Not Used Yet)"
         pendingReducedNormalBuffer.optLabel = "Scene Reduced Normal Buffer (Pending)"
         
         let reducedColorBufferSize = triangleCapacity * MemoryLayout<simd_uint4>.stride
-        currentReducedColorBuffer = device.makeBuffer(length: reducedColorBufferSize, options: .storageModePrivate)!
-        pendingReducedColorBuffer = device.makeBuffer(length: reducedColorBufferSize, options: .storageModePrivate)!
+        currentReducedColorBuffer = device.makeBuffer(length: reducedColorBufferSize, options: .storageModeShared)!
+        pendingReducedColorBuffer = device.makeBuffer(length: reducedColorBufferSize, options: .storageModeShared)!
         currentReducedColorBuffer.optLabel = "Scene Reduced Color Buffer (Not Used Yet)"
         pendingReducedColorBuffer.optLabel = "Scene Reduced Color Buffer (Pending)"
         
         let reducedIndexBufferSize = triangleCapacity * MemoryLayout<simd_uint3>.stride
-        currentReducedIndexBuffer = device.makeBuffer(length: reducedIndexBufferSize, options: .storageModePrivate)!
-        pendingReducedIndexBuffer = device.makeBuffer(length: reducedIndexBufferSize, options: .storageModePrivate)!
+        currentReducedIndexBuffer = device.makeBuffer(length: reducedIndexBufferSize, options: .storageModeShared)!
+        pendingReducedIndexBuffer = device.makeBuffer(length: reducedIndexBufferSize, options: .storageModeShared)!
         currentReducedIndexBuffer.optLabel = "Scene Reduced Index Buffer (Not Used Yet)"
         pendingReducedIndexBuffer.optLabel = "Scene Reduced Index Buffer (Pending)"
         
@@ -450,11 +499,11 @@ extension SceneMeshReducer: BufferExpandable {
     private func ensureVertexCapacity(capacity: Int) {
         let reducedVertexBufferSize = capacity * MemoryLayout<simd_float3>.stride
         if pendingReducedVertexBuffer.length < reducedVertexBufferSize {
-            pendingReducedVertexBuffer = device.makeBuffer(length: reducedVertexBufferSize, options: .storageModePrivate)!
+            pendingReducedVertexBuffer = device.makeBuffer(length: reducedVertexBufferSize, options: .storageModeShared)!
             pendingReducedVertexBuffer.optLabel = "Scene Reduced Vertex Buffer (Pending)"
             
             let reducedNormalBufferSize = reducedVertexBufferSize >> 1
-            pendingReducedNormalBuffer = device.makeBuffer(length: reducedNormalBufferSize, options: .storageModePrivate)!
+            pendingReducedNormalBuffer = device.makeBuffer(length: reducedNormalBufferSize, options: .storageModeShared)!
             pendingReducedNormalBuffer.optLabel = "Scene Reduced Normal Buffer (Pending)"
         }
         
@@ -464,13 +513,13 @@ extension SceneMeshReducer: BufferExpandable {
     private func ensureTriangleCapacity(capacity: Int) {
         let reducedIndexBufferSize = capacity * MemoryLayout<simd_uint3>.stride
         if pendingReducedIndexBuffer.length < reducedIndexBufferSize {
-            pendingReducedIndexBuffer = device.makeBuffer(length: reducedIndexBufferSize, options: .storageModePrivate)!
+            pendingReducedIndexBuffer = device.makeBuffer(length: reducedIndexBufferSize, options: .storageModeShared)!
             pendingReducedIndexBuffer.optLabel = "Scene Reduced Index Buffer (Pending)"
         }
         
         let reducedColorBufferSize = capacity * MemoryLayout<simd_uint4>.stride
         if pendingReducedColorBuffer.length < reducedColorBufferSize {
-            pendingReducedColorBuffer = device.makeBuffer(length: reducedColorBufferSize, options: .storageModePrivate)!
+            pendingReducedColorBuffer = device.makeBuffer(length: reducedColorBufferSize, options: .storageModeShared)!
             pendingReducedColorBuffer.optLabel = "Scene Reduced Color Buffer (Pending)"
         }
     }
@@ -478,7 +527,7 @@ extension SceneMeshReducer: BufferExpandable {
     private func ensureSectorIDCapacity(capacity: Int) {
         let transientSectorIDBufferSize = capacity * MemoryLayout<UInt8>.stride
         if transientSectorIDBuffer.length < transientSectorIDBufferSize {
-            transientSectorIDBuffer = device.makeBuffer(length: transientSectorIDBufferSize, options: .storageModePrivate)!
+            transientSectorIDBuffer = device.makeBuffer(length: transientSectorIDBufferSize, options: .storageModeShared)!
             transientSectorIDBuffer.optLabel = "Scene Mesh Reducer Transient Sector ID Buffer"
         }
         

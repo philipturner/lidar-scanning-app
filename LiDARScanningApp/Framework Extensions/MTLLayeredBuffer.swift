@@ -147,7 +147,7 @@ public extension MTLDevice {
     
     @inlinable @inline(__always)
     func makeLayeredBuffer<Layer: MTLBufferLayer>(
-        capacity: Int, options: MTLResourceOptions = .storageModePrivate) -> MTLLayeredBuffer<Layer>
+        capacity: Int, options: MTLResourceOptions = .storageModeShared) -> MTLLayeredBuffer<Layer>
     {
         .init(_device:   self,
               _capacity: capacity,
