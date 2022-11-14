@@ -1,6 +1,6 @@
 # LiDAR Scanning App
 
-iOS app for scanning a scene and exporting the 3D mesh. Renders the mesh as a green wireframe and exports it when you tap the screen.
+iOS app for scanning a scene and exporting the 3D mesh. This renders the mesh as a green wireframe and exports it when you tap the screen.
 
 ![Screenshot of the green scene mesh overlaid on the real world](./Documentation/AppScreenshot.jpg)
 
