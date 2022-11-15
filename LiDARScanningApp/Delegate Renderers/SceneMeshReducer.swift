@@ -58,7 +58,7 @@ final class SceneMeshReducer: DelegateRenderer {
       let src = buffer.contents()
       let dst = byteStream
       let len = numElements * 16
-      memcpy(src, dst, len)
+      memcpy(dst, src, len)
       byteStream += len
     }
     
@@ -69,6 +69,10 @@ final class SceneMeshReducer: DelegateRenderer {
     
     // Validate and export
     precondition(byteStream - originalPointer == memorySize)
+    precondition(headersPointer[0] = UInt32(numVertices))
+    precondition(headersPointer[1] = UInt32(numTriangles))
+    precondition(headersPointer[2] = UInt32(numNormals))
+    precondition(headersPointer[3] = UInt32(0))
     return Data(
       bytesNoCopy: originalPointer, count: memorySize, deallocator: .free)
   }
