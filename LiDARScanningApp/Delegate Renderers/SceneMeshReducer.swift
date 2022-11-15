@@ -29,7 +29,7 @@ final class SceneMeshReducer: DelegateRenderer {
           let reducedIndexBuffer = reducedIndexBuffer,
           let reducedNormalBuffer = reducedNormalBuffer,
           let numVertices = preCullVertexCount,
-          let numIndices = preCullTriangleCount,
+          let numTriangles = preCullTriangleCount,
           let numNormals = preCullVertexCount else {
       return nil
     }
@@ -38,7 +38,7 @@ final class SceneMeshReducer: DelegateRenderer {
     var memorySize = 3 * MemoryLayout<UInt32>.stride + 4
     precondition(memorySize == 16)
     memorySize += numVertices * MemoryLayout<SIMD3<Float>>.stride
-    memorySize += numIndices * MemoryLayout<SIMD3<Float>>.stride
+    memorySize += numTriangles * MemoryLayout<SIMD3<UInt32>>.stride
     memorySize += numNormals * MemoryLayout<SIMD3<Float>>.stride
     
     // Create pointer
@@ -48,7 +48,7 @@ final class SceneMeshReducer: DelegateRenderer {
     // Write headers
     let headersPointer = byteStream.assumingMemoryBound(to: UInt32.self)
     headersPointer[0] = UInt32(numVertices)
-    headersPointer[1] = UInt32(numIndices)
+    headersPointer[1] = UInt32(numTriangles)
     headersPointer[2] = UInt32(numNormals)
     headersPointer[3] = UInt32(0)
     byteStream += 16
@@ -64,7 +64,7 @@ final class SceneMeshReducer: DelegateRenderer {
     
     // Write data
     write(buffer: reducedVertexBuffer, numElements: numVertices)
-    write(buffer: reducedIndexBuffer, numElements: numIndices)
+    write(buffer: reducedIndexBuffer, numElements: numTriangles)
     write(buffer: reducedNormalBuffer, numElements: numNormals)
     
     // Validate and export
