@@ -37,9 +37,9 @@ final class SceneMeshReducer: DelegateRenderer {
     // Headers + padding
     var memorySize = 3 * MemoryLayout<UInt32>.stride + 4
     precondition(memorySize == 16)
-    memorySize += numVertices * MemoryLayout<SIMD3<Float>>.stride
+    memorySize += numVertices * MemoryLayout<SIMD3<Float32>>.stride
     memorySize += numTriangles * MemoryLayout<SIMD3<UInt32>>.stride
-    memorySize += numNormals * MemoryLayout<SIMD3<Float>>.stride
+    memorySize += numNormals * MemoryLayout<SIMD3<Float16>>.stride
     
     // Create pointer
     var byteStream = malloc(memorySize)!
@@ -53,19 +53,40 @@ final class SceneMeshReducer: DelegateRenderer {
     headersPointer[3] = UInt32(0)
     byteStream += 16
     
-    // Exploits the fact that every section uses 16-byte elements
-    func write(buffer: MTLBuffer, numElements: Int) {
-      let src = buffer.contents()
-      let dst = byteStream
-      let len = numElements * 16
-      memcpy(dst, src, len)
-      byteStream += len
-    }
-    
     // Write data
-    write(buffer: reducedVertexBuffer, numElements: numVertices)
-    write(buffer: reducedIndexBuffer, numElements: numTriangles)
-    write(buffer: reducedNormalBuffer, numElements: numNormals)
+    memcpy(byteStream, reducedVertexBuffer.contents(), numVertices * 16)
+    byteStream += numVertices * 16
+    memcpy(byteStream, reducedIndexBuffer.contents(), numTriangles * 16)
+    byteStream += numTriangles * 16
+    memcpy(byteStream, reducedNormalBuffer.contents(), numNormals * 8)
+    byteStream += numNormals * 8
+    
+    // Validate that indices are correct.
+    do {
+      // Check whether indices are within bounds.
+      let allIndices = reducedIndexBuffer.contents()
+        .assumingMemoryBound(to: SIMD3<UInt32>.self)
+      let indices = allIndices[0]
+      print()
+      print("Tested indices: \(indices), max \(numVertices)")
+      precondition(numVertices <= UInt32.max)
+      precondition(Int(indices[0]) < numVertices)
+      precondition(Int(indices[1]) < numVertices)
+      precondition(Int(indices[2]) < numVertices)
+      
+      // Actually read from the memory and ensure no segfaults happen.
+      let vertices = reducedVertexBuffer.contents()
+        .assumingMemoryBound(to: SIMD3<Float>.self)
+      print("Vertex A: \(vertices[Int(indices[0])])")
+      print("Vertex B: \(vertices[Int(indices[1])])")
+      print("Vertex C: \(vertices[Int(indices[2])])")
+      
+      let normals = reducedNormalBuffer.contents()
+        .assumingMemoryBound(to: SIMD3<Float16>.self)
+      print("Normal A: \(normals[Int(indices[0])])")
+      print("Normal B: \(normals[Int(indices[1])])")
+      print("Normal C: \(normals[Int(indices[2])])")
+    }
     
     // Validate and export
     precondition(byteStream - originalPointer == memorySize)
