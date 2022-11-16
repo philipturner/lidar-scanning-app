@@ -77,7 +77,9 @@ extension Coordinator: MTKViewDelegate {
     
     if gestureRecognizer.state != .possible {
       self.isSharePresented = true
-      self.fileToExport = renderer.sceneMeshReducer.exportData()
+      if self.fileToExport == nil {
+        self.fileToExport = renderer.sceneMeshReducer.exportData()
+      }
     }
   }
 }

@@ -86,6 +86,22 @@ final class SceneMeshReducer: DelegateRenderer {
       print("Normal A: \(normals[Int(indices[0])])")
       print("Normal B: \(normals[Int(indices[1])])")
       print("Normal C: \(normals[Int(indices[2])])")
+      
+      // Print the number of degenerate triangles, where some indices are the
+      // same.
+      print("Finding degenerate triangles...")
+      var count = 0
+      for i in 0..<numTriangles {
+        let indices = allIndices[i]
+        if indices[0] == indices[1] || indices[1] == indices[2] || indices[2] == indices[0] {
+          count += 1
+        }
+        
+        if i % 20_000 == 0 {
+          print("Checked \(i)-th triangle")
+        }
+      }
+      print("Degenerate triangles: \(count)/\(numTriangles)")
     }
     
     // Validate and export
