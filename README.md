@@ -18,4 +18,4 @@ UInt32 - Number of normals
 
 ## Attribution
 
-Some source files are copied directly from [ARHeadsetKit](https://github.com/philipturner/ARHeadsetKit) without modification.
+Most source code is copied directly from [ARHeadsetKit](https://github.com/philipturner/ARHeadsetKit).
