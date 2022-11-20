@@ -15,3 +15,7 @@ UInt32 - Number of normals
 [SIMD3<UInt32>] - Indices; array of triangle index triples aligned to 16B
 [SIMD3<Float16>] - Normals; array of direction vectors aligned to 8B
 ```
+
+## Attribution
+
+Some source files are copied directly from [ARHeadsetKit](https://github.com/philipturner/ARHeadsetKit) without modification.
